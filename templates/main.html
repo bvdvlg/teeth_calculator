@@ -2,7 +2,7 @@
 <html lang="">
 <head>
     <meta charset="utf-8">
-    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/camera_utils/camera_utils.js" crossorigin="anonymous"></script>
+    <script src="camera_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
@@ -11,8 +11,7 @@
 
 <body>
 <div class="container">
-    <video class="input_video" width="0" height="0"></video>
-    <canvas class="output_canvas" width="1280px" height="720px" style="transform: rotateY(180deg); -webkit-transform:rotateY(180deg); -moz-transform:rotateY(180deg);">
+    <canvas class="output_canvas" width="1280px" height="720px">
     </canvas>
     <button id="accept">Accept</button>
     <button id="get_res">Get result</button>
@@ -22,7 +21,7 @@
 </html>
 
 <script type="module">
-    const videoElement = document.getElementsByClassName('input_video')[0];
+    const container = document.getElementsByClassName("container")[0];
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
     let scale = 0
@@ -189,14 +188,21 @@
     });
     faceMesh.onResults(onResults);
 
+    let devices = await navigator.mediaDevices.enumerateDevices()
+    for (let deviceid in devices){
+        let device = devices[deviceid]
+        if (device.kind === "videoinput"){
+        container.insertAdjacentHTML("afterbegin", `<video id=${device.deviceId}></video>`);
+        let videoElement = document.getElementById(device.deviceId);
     const camera = new Camera(videoElement, {
         onFrame: async () => {
             await faceMesh.send({image: videoElement});
         },
         width: 1280,
-        height: 720
+        height: 720,
+        facingMode: 'environment'
     });
-    camera.start();
+    camera.start();}}
 
     function confirmation() {
         faceMesh.onResults(setFace);

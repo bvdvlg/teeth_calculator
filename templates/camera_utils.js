@@ -49,7 +49,7 @@
     });
     var m = this || self;
     var n = {
-        facingMode: "user",
+        //facingMode: "user",
         width: 640,
         height: 480,
         deviceId: {}
@@ -88,7 +88,7 @@
         var b = this.g;
         return navigator.mediaDevices.getUserMedia({
             video: {
-                facingMode: b.facingMode,
+                //facingMode: b.facingMode,
                 width: b.width,
                 height: b.height,
                 deviceId: b.deviceId

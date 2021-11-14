@@ -49,7 +49,7 @@
     });
     var m = this || self;
     var n = {
-        facingMode: "environment",
+        facingMode: "user",
         width: 640,
         height: 480,
         deviceId: {}

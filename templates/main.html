@@ -192,7 +192,7 @@
     for (let deviceid in devices){
         let device = devices[deviceid]
         if (device.kind === "videoinput"){
-        container.insertAdjacentHTML("afterbegin", `<video id=${device.deviceId}></video>`);
+        container.insertAdjacentHTML("afterbegin", `<video id=${device.deviceId}></video><p>${device.label}</p>`);
         let videoElement = document.getElementById(device.deviceId);
     const camera = new Camera(videoElement, {
         onFrame: async () => {
@@ -200,7 +200,6 @@
         },
         width: 1280,
         height: 720,
-        facingMode: 'environment',
         deviceId: device.deviceId
     });
     camera.start();}}

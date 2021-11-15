@@ -44,7 +44,7 @@
     faceMesh.onResults(mainRecognizer);
 
     function confirmation () {
-        faceMesh.onResults(fixScaling);
+        faceMesh.onResults((results) => {fixScaling(results); faceMesh.onResults(mainRecognizer)});
     }
 
     let mediaDevices = await navigator.mediaDevices.enumerateDevices();
@@ -76,8 +76,7 @@
         }
 
         camera.restart(camera_constraints, async () => {
-            await faceMesh.send({image: videoElement}, dataload)
-        })
+            await faceMesh.send({image: videoElement});}, dataload)
 	console.log(camera.constraints);
     }
 

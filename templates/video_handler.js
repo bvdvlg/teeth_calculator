@@ -16,6 +16,7 @@ class Camera {
     }
 
     restart(constraints, onFrame) {
+        const video = document.querySelector('video');
         this.clear();
         this.constraints = constraints;
         this.onFrame = onFrame;

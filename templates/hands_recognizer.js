@@ -122,15 +122,15 @@ function mainRecognizer(results) {
     canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
     canvasCtx.drawImage(
         results.image, 0, 0, canvasElement.width, canvasElement.height);
-
-    if (results.multiFaceLandmarks) {
+    if (results.multiFaceLandmarks.length) {
         for (const landmarks of results.multiFaceLandmarks) {
             for (let landmark in landmarks){
                 landmarks[landmark].x = landmarks[landmark].x*canvasElement.width;
                 landmarks[landmark].y = landmarks[landmark].y*canvasElement.height
             }
             let face = new Face(landmarks, scale);
-            diag = Math.max(face.get_diag(), diag);
+            if (diag)
+                diag = Math.max(face.get_diag(), diag);
             for (let num in Face.defined_dots) {
                 let land = face.get_el(num);
                 canvasCtx.beginPath();
@@ -143,12 +143,15 @@ function mainRecognizer(results) {
 }
 
 function fixScaling(results) {
-    let landmarks = results.multiFaceLandmarks[0];
-    for (let landmark in landmarks){
-        landmarks[landmark].x = landmarks[landmark].x*canvasElement.width;
-        landmarks[landmark].y = landmarks[landmark].y*canvasElement.height
+    if (results.multiFaceLandmarks.length) {
+        let landmarks = results.multiFaceLandmarks[0];
+        for (let landmark in landmarks) {
+            landmarks[landmark].x = landmarks[landmark].x * canvasElement.width;
+            landmarks[landmark].y = landmarks[landmark].y * canvasElement.height
+        }
+        let new_face = new Face(landmarks)
+        scale = new_face.scale;
+        width = new_face.get_width();
+        diag = new_face.get_diag();
     }
-    let new_face = new Face(landmarks)
-    scale = new_face.scale;
-    width = new_face.get_width();
 }

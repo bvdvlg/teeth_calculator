@@ -1,10 +1,12 @@
 class Camera {
     constraints
     onFrame
+    ondataload
 
-    constructor(constraints, onFrame) {
+    constructor(constraints, onFrame, ondataload) {
         this.constraints = constraints;
         this.onFrame = onFrame;
+        this.ondataload = ondataload
         try {
             this.get_media_device(constraints).then((stream) => {this.startProcessing(stream)});
         }
@@ -32,6 +34,7 @@ class Camera {
         video.srcObject = stream;
         video.onloadedmetadata = () => {
             video.play();
+            this.ondataload()
             this.requestFrame(video);
         }
     }

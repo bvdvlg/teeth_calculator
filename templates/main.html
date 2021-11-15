@@ -21,7 +21,7 @@
 </div>
 </body>
 </html>
-<script src="templates/video_handler.js"></script>
+<script src="video_handler.js"></script>
 <script type="module">
 
     (function () {    var old = console.log;    var logger = document.getElementById('log');    console.log = function (message) {        if (typeof message == 'object') {            logger.innerHTML += (JSON && JSON.stringify ? JSON.stringify(message) : message) + '<br />';        } else {            logger.innerHTML += message + '<br />';        }    }})();
@@ -29,10 +29,10 @@
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
     let videoElement = document.getElementById("main_video")
-    videoElement.addEventListener('loadedmetadata', function() {
+    function dataload () {
         canvasElement.width = document.documentElement.clientWidth;
         canvasElement.height = (canvasElement.width/videoElement.videoWidth)*videoElement.videoHeight;
-    }, true);
+    };
 
     const faceMesh = new FaceMesh({locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
@@ -67,7 +67,7 @@
     let camera = new Camera(constraints, async () => {
         await faceMesh.send({image: videoElement});
         faceMesh.onResults(mainRecognizer);
-    });
+    }, dataload);
 
     function revertCamera () {
     	console.log(camera.constraints);
@@ -79,7 +79,7 @@
         }
 
         camera.restart(camera_constraints, async () => {
-            await faceMesh.send({image: videoElement})
+            await faceMesh.send({image: videoElement}, dataload)
         })
 	console.log(camera.constraints);
     }
@@ -88,4 +88,4 @@
     document.getElementById("get_res").onclick = get_result;
     document.getElementById("switch_camera").onclick = revertCamera;
 </script>
-<script src="templates/hands_recognizer.js"></script>
+<script src="hands_recognizer.js"></script>

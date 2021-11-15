@@ -69,7 +69,7 @@
     });
 
     function revertCamera () {
-        let camera_constraints = constraints;
+        let camera_constraints = camera.constraints;
         if (camera_constraints.deviceId === back_camera.deviceId) {
             camera_constraints.video = front_camera.deviceId;
         } else {
@@ -79,7 +79,6 @@
         camera.restart(camera_constraints, async () => {
             await faceMesh.send({image: videoElement})
         })
-        console.log(camera.constraints)
     }
 
     document.getElementById("accept").onclick = confirmation;

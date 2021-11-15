@@ -13,6 +13,7 @@
     <video id="main_video" style="display: none" playsinline></video>
     <canvas class="output_canvas">
     </canvas>
+    <div id="log"></div>
     <button id="accept" style="width: 100px; height: 50px">Accept</button>
     <button id="get_res" style="width: 100px; height: 50px">Get result</button>
     <button id="switch_camera" style="width: 100px; height: 50px">Switch camera</button>
@@ -22,6 +23,9 @@
 </html>
 <script src="video_handler.js"></script>
 <script type="module">
+
+    (function () {    var old = console.log;    var logger = document.getElementById('log');    console.log = function (message) {        if (typeof message == 'object') {            logger.innerHTML += (JSON && JSON.stringify ? JSON.stringify(message) : message) + '<br />';        } else {            logger.innerHTML += message + '<br />';        }    }})();
+
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
     let videoElement = document.getElementById("main_video")
@@ -67,10 +71,13 @@
     function revertCamera () {
         let camera_constraints = constraints;
         if (camera_constraints.deviceId === back_camera.deviceId) {
-            camera_constraints.facingMode = { exact: "user" };
+            camera_constraints.deviceId = front_camera.deviceId;
         } else {
             camera_constraints.deviceId = back_camera.deviceId;
         }
+        console.log(back_camera.deviceId)
+        console.log(front_camera.deviceId)
+        console.log(camera_constraints.deviceId)
 
         camera.restart(camera_constraints, async () => {
             await faceMesh.send({image: videoElement})

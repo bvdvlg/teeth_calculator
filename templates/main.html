@@ -71,11 +71,9 @@
     function revertCamera () {
         let camera_constraints = constraints;
         if (camera_constraints.deviceId === back_camera.deviceId) {
-            camera_constraints = { audio: false,
-                video: {facingMode: "environment", deviceId: front_camera.deviceId}};
+            camera_constraints.video = front_camera.deviceId;
         } else {
-            camera_constraints = { audio: false,
-                video: { facingMode: "user", deviceId: back_camera.deviceId}};
+            camera_constraints.video = back_camera.deviceId;
         }
 
         camera.restart(camera_constraints, async () => {

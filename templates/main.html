@@ -23,9 +23,6 @@
 </html>
 <script src="video_handler.js"></script>
 <script type="module">
-
-    (function () {    var old = console.log;    var logger = document.getElementById('log');    console.log = function (message) {        if (typeof message == 'object') {            logger.innerHTML += (JSON && JSON.stringify ? JSON.stringify(message) : message) + '<br />';        } else {            logger.innerHTML += message + '<br />';        }    }})();
-
     const canvasElement = document.getElementsByClassName('output_canvas')[0];
     const canvasCtx = canvasElement.getContext('2d');
     let videoElement = document.getElementById("main_video")
@@ -71,13 +68,12 @@
     function revertCamera () {
         let camera_constraints = constraints;
         if (camera_constraints.deviceId === back_camera.deviceId) {
-            camera_constraints.deviceId = front_camera.deviceId;
+            camera_constraints.facingMode = "user";
+            camera_constraints.deviceId = ""
         } else {
+            camera_constraints.facingMode = "environment";
             camera_constraints.deviceId = back_camera.deviceId;
         }
-        console.log(back_camera.deviceId)
-        console.log(front_camera.deviceId)
-        console.log(camera_constraints.deviceId)
 
         camera.restart(camera_constraints, async () => {
             await faceMesh.send({image: videoElement})

@@ -15,6 +15,7 @@
     </canvas>
     <button id="accept" style="width: 100px; height: 50px">Accept</button>
     <button id="get_res" style="width: 100px; height: 50px">Get result</button>
+    <button id="switch_camera" style="width: 100px; height: 50px">Switch camera</button>
     <div id="res"></div>
 </div>
 </body>
@@ -41,16 +42,43 @@
 
     faceMesh.onResults(mainRecognizer);
 
-    new Camera({audio: false, video: true}, async () => {
-        await faceMesh.send({image: videoElement});
-        faceMesh.onResults(mainRecognizer);
-    });
-
     function confirmation () {
         faceMesh.onResults(fixScaling);
     }
 
+    let mediaDevices = await navigator.mediaDevices.enumerateDevices();
+    mediaDevices = mediaDevices.filter(device => device.kind === "videoinput");
+    let back_camera = mediaDevices[mediaDevices.length-1];
+    let front_camera = mediaDevices[0];
+
+    let constraints = {
+        audio: false,
+        video: {
+            facingMode: "environment",
+            deviceId: back_camera.deviceId,
+        }
+    }
+
+    let camera = new Camera(constraints, async () => {
+        await faceMesh.send({image: videoElement});
+        faceMesh.onResults(mainRecognizer);
+    });
+
+    function revertCamera () {
+        let camera_constraints = constraints;
+        if (camera_constraints.deviceId === back_camera.deviceId) {
+            camera_constraints.deviceId = front_camera.deviceId;
+        } else {
+            camera_constraints.deviceId = back_camera.deviceId;
+        }
+
+        camera.restart(camera_constraints, async () => {
+            await faceMesh.send({image: videoElement})
+        })
+    }
+
     document.getElementById("accept").onclick = confirmation;
     document.getElementById("get_res").onclick = get_result;
+    document.getElementById("switch_camera").onclick = revertCamera;
 </script>
 <script src="hands_recognizer.js"></script>

@@ -49,13 +49,10 @@
 
     let mediaDevices = await navigator.mediaDevices.enumerateDevices();
     mediaDevices = mediaDevices.filter(device => device.kind === "videoinput");
-    let back_camera = mediaDevices[mediaDevices.length-1];
-    let front_camera = mediaDevices[0];
     let constraints = {
         audio: false,
         video: {
             facingMode: "environment",
-            deviceId: back_camera.deviceId,
         }
     }
 
@@ -66,10 +63,10 @@
 
     function revertCamera () {
         let camera_constraints = camera.constraints;
-        if (camera_constraints.video.deviceId === back_camera.deviceId) {
-            camera_constraints.video.deviceId = front_camera.deviceId;
+        if (camera_constraints.video.facingMode === "user") {
+            camera_constraints.video.facingMode = "environment";
         } else {
-            camera_constraints.video.deviceId = back_camera.deviceId;
+            camera_constraints.video.facingMode = "user";
         }
 
         camera.restart(camera_constraints, async () => {

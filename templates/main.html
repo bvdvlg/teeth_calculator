@@ -27,7 +27,7 @@
     const canvasCtx = canvasElement.getContext('2d');
     let videoElement = document.getElementById("main_video")
     function dataload () {
-        canvasElement.width = document.documentElement.clientWidth;
+        canvasElement.width = document.documentElement.clientWidth - 20;
         canvasElement.height = (canvasElement.width/videoElement.videoWidth)*videoElement.videoHeight;
     }
 
@@ -51,8 +51,6 @@
     mediaDevices = mediaDevices.filter(device => device.kind === "videoinput");
     let back_camera = mediaDevices[mediaDevices.length-1];
     let front_camera = mediaDevices[0];
-    console.log(back_camera.deviceId);
-    console.log(front_camera.deviceId);
     let constraints = {
         audio: false,
         video: {
@@ -67,7 +65,6 @@
     }, dataload);
 
     function revertCamera () {
-    	console.log(camera.constraints);
         let camera_constraints = camera.constraints;
         if (camera_constraints.video.deviceId === back_camera.deviceId) {
             camera_constraints.video.deviceId = front_camera.deviceId;
@@ -77,7 +74,6 @@
 
         camera.restart(camera_constraints, async () => {
             await faceMesh.send({image: videoElement});}, dataload)
-	console.log(camera.constraints);
     }
 
     document.getElementById("accept").onclick = confirmation;

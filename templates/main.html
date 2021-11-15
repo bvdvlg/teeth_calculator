@@ -11,17 +11,17 @@
 <body>
 <div class="container">
     <video id="main_video" style="display: none" playsinline></video>
-    <canvas class="output_canvas">
+    <canvas class="output_canvas" style="margin-bottom: 100px;">
     </canvas>
     <div id="log"></div>
-    <button id="accept" style="width: 100px; height: 50px">Accept</button>
-    <button id="get_res" style="width: 100px; height: 50px">Get result</button>
-    <button id="switch_camera" style="width: 100px; height: 50px">Switch camera</button>
+    <button id="accept" style="width: 200px; height: 100px">Accept</button>
+    <button id="get_res" style="width: 200px; height: 100px; margin-left: 70px;">Get result</button>
+    <button id="switch_camera" style="width: 200px; height: 100px; margin-left: 70px;">Switch camera</button>
     <div id="res"></div>
 </div>
 </body>
 </html>
-<script src="video_handler.js"></script>
+<script src="templates/video_handler.js"></script>
 <script type="module">
 
     (function () {    var old = console.log;    var logger = document.getElementById('log');    console.log = function (message) {        if (typeof message == 'object') {            logger.innerHTML += (JSON && JSON.stringify ? JSON.stringify(message) : message) + '<br />';        } else {            logger.innerHTML += message + '<br />';        }    }})();
@@ -32,7 +32,7 @@
     videoElement.addEventListener('loadedmetadata', function() {
         canvasElement.width = document.documentElement.clientWidth;
         canvasElement.height = (canvasElement.width/videoElement.videoWidth)*videoElement.videoHeight;
-    });
+    }, true);
 
     const faceMesh = new FaceMesh({locateFile: (file) => {
             return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
@@ -54,7 +54,8 @@
     mediaDevices = mediaDevices.filter(device => device.kind === "videoinput");
     let back_camera = mediaDevices[mediaDevices.length-1];
     let front_camera = mediaDevices[0];
-
+    console.log(back_camera.deviceId);
+    console.log(front_camera.deviceId);
     let constraints = {
         audio: false,
         video: {
@@ -69,20 +70,22 @@
     });
 
     function revertCamera () {
+    	console.log(camera.constraints);
         let camera_constraints = camera.constraints;
-        if (camera_constraints.deviceId === back_camera.deviceId) {
-            camera_constraints.video = front_camera.deviceId;
+        if (camera_constraints.video.deviceId === back_camera.deviceId) {
+            camera_constraints.video.deviceId = front_camera.deviceId;
         } else {
-            camera_constraints.video = back_camera.deviceId;
+            camera_constraints.video.deviceId = back_camera.deviceId;
         }
 
         camera.restart(camera_constraints, async () => {
             await faceMesh.send({image: videoElement})
         })
+	console.log(camera.constraints);
     }
 
     document.getElementById("accept").onclick = confirmation;
     document.getElementById("get_res").onclick = get_result;
     document.getElementById("switch_camera").onclick = revertCamera;
 </script>
-<script src="hands_recognizer.js"></script>
+<script src="templates/hands_recognizer.js"></script>

@@ -67,7 +67,7 @@
     function revertCamera () {
         let camera_constraints = constraints;
         if (camera_constraints.deviceId === back_camera.deviceId) {
-            camera_constraints.deviceId = front_camera.deviceId;
+            camera_constraints.facingMode = { exact: "user" };
         } else {
             camera_constraints.deviceId = back_camera.deviceId;
         }

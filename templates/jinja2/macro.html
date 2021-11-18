@@ -1,0 +1,19 @@
+{% macro nav_link(endpoint, name, request) %}
+    {% if request.path == url(endpoint) %}
+        <div class="nav-container active">
+                <div class="container">
+                    <div class="active header-link" href="{{ url(endpoint) }}">
+                        {{name}}
+                    </div>
+                </div>
+                <div class="nav-underline"></div>
+        </div>
+    {% else %}
+<div class="nav-container">
+    <div class="container">
+    <div class="header-link" href="{{ url(endpoint) }}">{{name}}</div>
+    </div>
+<div class="nav-underline"></div>
+</div>
+    {% endif %}
+{% endmacro %}}

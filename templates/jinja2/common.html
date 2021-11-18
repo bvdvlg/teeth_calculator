@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+{% import "macro.html" as macro %}
+<html lang="ru">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+    <link rel="stylesheet" href="{{ static('common.css') }}">
+    {% block head %}
+    <title>Teeth | {% block title %}{% endblock %}</title>
+    {% endblock %}
+</head>
+<body id="common-body">
+    <div class="top-menu">
+        <img src="{{ static('dentist.png') }}" alt="Icon" style="background: white;margin: 4px; border-radius: 5px;"/>
+        {{ macro.nav_link('main', 'Главная', request) }}
+        {{ macro.nav_link('camera', 'Камера', request) }}
+        {{ macro.nav_link('about', 'О проекте', request) }}
+        {{ macro.nav_link('results', 'Результаты', request) }}
+    </div>
+    <div id="page-content">
+        <div class="container">
+    {% block content %}{% endblock %}
+        </div>
+    </div>
+    <footer>По всем вопросам обращаться на bvdvlg@gmail.com</footer>
+</body>
+</html>
+
+<script>
+    nav_container = document.getElementsByClassName("nav-container");
+    for (let nav_index=0; nav_index< nav_container.length; nav_index+=1) {
+        let nav_element = nav_container.item(nav_index);
+        nav_element.onclick = () => {
+            let href = nav_element.querySelector(".container>.header-link").attributes.href.value;
+            window.location = "http://"+window.location.host+href;
+
+        }
+    }
+</script>

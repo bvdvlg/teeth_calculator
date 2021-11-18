@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+{% extends 'common.html' %}
+{% block content %}
+<html lang="">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ static('camera.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <title>{% block title %}Camera{% endblock %}</title>
+    {% block head %}
+    {{ super() }}
+    {% endblock %}
+</head>
+
+<body>
+<div id="camera-content">
+<div class="container">
+    <div class="upper-content"></div>
+    <video id="main-video" playsinline></video>
+    <canvas class="output-canvas"></canvas>
+    <div class="video-buttons">
+        <div id="accept">Accept</div>
+        <div id="get_res">Get result</div>
+        <div id="switch_camera">Switch camera</div>
+    </div>
+    <div id="res"></div>
+</div>
+</div>
+</body>
+</html>
+
+
+<script src="{{ static('video_handler.js') }}"></script>
+<script type="module">
+    const canvasElement = document.getElementsByClassName('output-canvas')[0];
+    let videoElement = document.getElementById("main-video")
+
+    function oncameraload() {
+        let document_height = document.documentElement.clientHeight
+        let document_width = document.documentElement.clientWidth-20
+        let max_height = Math.min(videoElement.videoHeight, document_height);
+        let max_width = Math.min(videoElement.videoWidth, document_width);
+        let potential_width = (max_height/videoElement.videoHeight)*videoElement.videoWidth;
+        let potential_height = (max_width/videoElement.videoWidth)*videoElement.videoHeight;
+        if (potential_height < document_height) {
+            canvasElement.width = max_width;
+            canvasElement.height = potential_height
+        }
+        if (potential_width < document_width) {
+            canvasElement.height = max_height;
+            canvasElement.width = potential_width
+        }
+    }
+
+    const faceMesh = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+    faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.85,
+        minTrackingConfidence: 0.85
+    });
+    faceMesh.onResults(mainRecognizer);
+
+    let camera = new Camera({audio: false, video: {facingMode: "environment"}
+    }, async () => {
+        await faceMesh.send({image: videoElement});
+        faceMesh.onResults(mainRecognizer);
+    }, oncameraload);
+
+    function revertCamera () {
+        let camera_constraints = camera.constraints;
+        if (camera_constraints.video.facingMode === "user") {
+            camera_constraints.video.facingMode = "environment";
+        } else {
+            camera_constraints.video.facingMode = "user";
+        }
+
+        camera.restart(camera_constraints, async () => {
+            await faceMesh.send({image: videoElement});}, oncameraload)
+    }
+
+    document.getElementById("accept").onclick = () => {
+        faceMesh.onResults((results) => {
+            fixScaling(results);
+            faceMesh.onResults(mainRecognizer)
+        })
+    };
+    document.getElementById("get_res").onclick = get_result;
+    document.getElementById("switch_camera").onclick = revertCamera;
+</script>
+<script src="{{ static('hands_recognizer.js') }}"></script>
+{% endblock %}

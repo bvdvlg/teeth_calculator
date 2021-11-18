@@ -1,7 +1,21 @@
+import jinja2
 from django.shortcuts import render
-
+from django.template import RequestContext
 
 # Create your views here.
 
-def index(request):
-    return render(request, "main.html")
+
+def camera(request):
+    return render(request, 'camera.html')
+
+
+def main(request):
+    return render(request, 'main.html')
+
+
+def about(request):
+    return render(request, 'about.html')
+
+
+def results(request):
+    return render(request, 'results.html')

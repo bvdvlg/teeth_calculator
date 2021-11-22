@@ -1,10 +1,3 @@
-const canvasElement = document.getElementsByClassName('output-canvas')[0];
-const canvasCtx = canvasElement.getContext('2d');
-let scale = 0
-let width = 0
-let diag = 0
-
-
 class Landmark {
     x
     y
@@ -23,10 +16,11 @@ class FaceLandmarks {
     landmarks
 
     constructor(landmarks) {
-        if (!landmarks)
+        if (!landmarks) {
             landmarks = [];
-        for (let el in Array(477).keys())
-            landmarks.push(new Landmark(0, 0));
+            for (let el in Array(477).keys())
+                landmarks.push(new Landmark(0, 0));
+        }
         this.landmarks = {};
         for (let key in landmarks) {
             this.landmarks[key] = new Landmark(landmarks[key].x, landmarks[key].y);
@@ -154,4 +148,54 @@ function fixScaling(results) {
         width = new_face.get_width();
         diag = new_face.get_diag();
     }
+}
+
+function researchRecognizer(results) {
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(
+        results.image, 0, 0, canvasElement.width, canvasElement.height);
+    if (results.multiFaceLandmarks.length) {
+        for (const landmarks of results.multiFaceLandmarks) {
+            for (let landmark in landmarks){
+                landmarks[landmark].x = landmarks[landmark].x*canvasElement.width;
+                landmarks[landmark].y = landmarks[landmark].y*canvasElement.height
+            }
+            let face = new Face(landmarks, scale);
+            faceMeasures.push(face);
+            if (diag)
+                diag = Math.max(face.get_diag(), diag);
+            for (let num in Face.defined_dots) {
+                let land = face.get_el(num);
+                canvasCtx.beginPath();
+                canvasCtx.arc(land.x, land.y, 3, 2 * Math.PI, false);
+                canvasCtx.fill();
+            }
+        }
+    }
+    canvasCtx.restore();
+}
+
+function scalingRecognizer(results) {
+    canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(
+        results.image, 0, 0, canvasElement.width, canvasElement.height);
+    if (results.multiFaceLandmarks.length) {
+        for (const landmarks of results.multiFaceLandmarks) {
+            for (let landmark in landmarks){
+                landmarks[landmark].x = landmarks[landmark].x*canvasElement.width;
+                landmarks[landmark].y = landmarks[landmark].y*canvasElement.height
+            }
+            let new_face = new Face(landmarks)
+            scalingMeasures.push(new_face);
+            for (let num in Face.defined_dots) {
+                let land = new_face.get_el(num);
+                canvasCtx.beginPath();
+                canvasCtx.arc(land.x, land.y, 3, 2 * Math.PI, false);
+                canvasCtx.fill();
+            }
+        }
+    }
+    canvasCtx.restore();
 }

@@ -2,6 +2,6 @@
 {% extends 'common.html' %}
 {% block content %}
 <body>
-    <a href="{{ static('video_handler.js') }}" download>Скачать результаты</a>
+    <a href="/api/measurements/dump_database/" download>Скачать результаты</a>
 </body>
 {% endblock %}

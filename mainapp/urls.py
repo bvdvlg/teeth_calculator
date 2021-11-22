@@ -7,4 +7,5 @@ urlpatterns = [
     path('camera/', views.camera, name="camera"),
     path('about/', views.about, name="about"),
     path('main/', views.main, name="main"),
-    path('results/', views.results, name="results")]
+    path('results/', views.results, name="results"),
+]

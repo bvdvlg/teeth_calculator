@@ -17,15 +17,54 @@
 <body>
 <div id="camera-content">
 <div class="container">
-    <div class="upper-content"></div>
+    <div class="upper-content">
+        <div id="mode-note" style="width: 260px;">Включен пользовательский режим</div>
+        <div class="switch-btn"></div>
+    </div>
     <video id="main-video" playsinline></video>
     <canvas class="output-canvas"></canvas>
-    <div class="video-buttons">
+    <div id="camera-buttons" class="video-buttons">
         <div id="accept">Accept</div>
         <div id="get_res">Get result</div>
         <div id="switch_camera">Switch camera</div>
     </div>
+
     <div id="res"></div>
+</div>
+<div id="saving-popup" class="b-popup">
+    <div class="b-popup-content">
+        <div id="popup-header">
+            <h3>Пожалуйста, укажите следующие значения, чтобы записать результаты эксперимента в базу данных</h3>
+            <div style="flex: 1 0 auto;"></div>
+
+            <div class="cl-btn-6">
+                <div class="cl-btn-6-in close-popup">
+                    <div class="cl-btn-6-txt close-popup">Закрыть</div>
+                </div>
+            </div>
+        </div>
+        <form id="saving-form" style="display: flex; gap: 10px; flex-direction: column">
+            <div class="form-example">
+                <label for="name">Название эксперимента: </label>
+                <input type="text" name="name" id="name" required>
+            </div>
+            <div class="form-example">
+                <label for="real_width">Реальная ширина лица: </label>
+                <input type="number" name="real_width" step="any" min=100 max=200 id="real_width" required>
+            </div>
+            <div class="form-example">
+                <label for="real_diag">Реальная диагональ лица: </label>
+                <input type="number" name="real_diag" step="any" min=80 max=160 id="real_diag" required>
+            </div>
+            <div class="form-example">
+                <label for="distance">Реальное расстояние до лица: </label>
+                <input type="number" name="distance" step="any" id="distance" value=0 required>
+            </div>
+            <div class="form-example">
+                <input type="submit" id="submit-measurement" value="Submit">
+            </div>
+        </form>
+    </div>
 </div>
 </div>
 </body>
@@ -33,10 +72,113 @@
 
 
 <script src="{{ static('video_handler.js') }}"></script>
-<script type="module">
-    const canvasElement = document.getElementsByClassName('output-canvas')[0];
-    let videoElement = document.getElementById("main-video")
+    <script>
+            let videoElement = document.getElementById("main-video");
+            const canvasElement = document.getElementsByClassName('output-canvas')[0];
+            const canvasCtx = canvasElement.getContext('2d');
+            const switcherElements = document.getElementsByClassName("switch-btn");
+            const modeNote = document.getElementById("mode-note");
+            let faceMeasures = [];
+            let scalingMeasures = [];
+        const buttonsBar = document.getElementById("camera-buttons");
+        const resultLabel = document.getElementById("res");
+        let PopUp = document.getElementById("saving-popup");
+        let PopUpForm = document.getElementById("saving-form");
+        let scale = 0;
+        let width = 0;
+        let diag = 0;
+        let real_width = undefined;
+        let real_diag = undefined;
+        let distance = undefined;
 
+        function dropMeasurements() {
+            scalingMeasures = [];
+            faceMeasures = [];
+            width = 0;
+            scale = 0;
+            diag = 0;
+            real_width = undefined;
+            real_diag = undefined;
+            distance = undefined;
+        }
+
+        function addUserButtons() {
+            buttonsBar.innerHTML = "" +
+                "<div id=\"accept\">Accept</div>" +
+                "<div id=\"get_res\">Get result</div>" +
+                "<div id=\"switch_camera\">Switch camera</div>"
+        }
+
+        function addStartResearchButtons() {
+            buttonsBar.innerHTML = "" +
+                "<div id=\"start_research\">Start Research</div>" +
+                "<div id=\"switch_camera\">Switch camera</div>"
+        }
+
+        function start_research() {
+            buttonsBar.innerHTML = "" +
+                "<div id=\"accept_research_scaling\">Set scaling</div>" +
+                "<div id=\"cancel_camera\">Cancel</div>";
+        }
+
+        function accept_research() {
+            buttonsBar.innerHTML = "" +
+                "<div id=\"finish_research\">Finish Research</div>" +
+                "<div id=\"cancel_camera\">Cancel</div>";
+        }
+
+
+        function finishing_research() {
+            resultLabel.innerText = `Registered face width: ${width}\nRegistered face diag: ${diag}`;
+            buttonsBar.innerHTML = "" +
+                "<div id=\"save_results\">Save results</div>" +
+                "<div id=\"cancel_camera\">Cancel</div>";
+        }
+
+        function check_all_inserted(){
+            if (real_width!==undefined && real_diag!==undefined){
+            }
+            else{
+                let savingPopup = document.getElementById("saving-popup");
+                savingPopup.style.display = "block";
+                if (real_width!==undefined)
+                    PopUp.getElementById("real_width")
+            }
+        }
+
+        function finished_research() {
+            dropMeasurements();
+            addStartResearchButtons();
+            resultLabel.innerText = ""
+        }
+    </script>
+    <script>
+        function send_data(data) {
+            let url = "/api/measurements/add_measurement/";
+
+            let xhr = new XMLHttpRequest();
+            xhr.open("POST", url);
+
+            xhr.setRequestHeader("Accept", "application/json");
+            xhr.setRequestHeader("Content-Type", "application/json");
+            xhr.setRequestHeader("X-CSRFToken", document.cookie.match(/csrftoken=\w+/).input.split("=")[1]);
+            console.log("CSRF", document.cookie.match(/csrftoken=\w+/).input.split("=")[1]);
+
+            xhr.onreadystatechange = function () {
+                if (xhr.readyState === 4) {
+                    console.log(xhr.status);
+                    console.log(xhr.responseText);
+                }
+            };
+
+            xhr.send(data);
+        }
+
+        function faceToJson(face) {
+            return face.face_landmarks.landmarks;
+        }
+    </script>
+<script type="module">
     function oncameraload() {
         let document_height = document.documentElement.clientHeight
         let document_width = document.documentElement.clientWidth-20
@@ -68,7 +210,6 @@
     let camera = new Camera({audio: false, video: {facingMode: "environment"}
     }, async () => {
         await faceMesh.send({image: videoElement});
-        faceMesh.onResults(mainRecognizer);
     }, oncameraload);
 
     function revertCamera () {
@@ -83,14 +224,109 @@
             await faceMesh.send({image: videoElement});}, oncameraload)
     }
 
-    document.getElementById("accept").onclick = () => {
+    document.addEventListener("click", (e) => {
+        if (e.target.id === "accept")
+            faceMesh.onResults((results) => {
+                fixScaling(results);
+                faceMesh.onResults(mainRecognizer)
+            })
+    });
+
+    function startScalingRecording() {
+        scalingMeasures = [];
         faceMesh.onResults((results) => {
-            fixScaling(results);
-            faceMesh.onResults(mainRecognizer)
+                fixScaling(results);
+                faceMesh.onResults(scalingRecognizer)
+            });
+    }
+
+    function startFaceRecording() {
+        console.log(scalingMeasures);
+        faceMeasures = [];
+        faceMesh.onResults(researchRecognizer)
+    }
+
+    function cancelResearching() {
+        dropMeasurements();
+        faceMesh.onResults(empty)
+    }
+
+function finishFaceRecording() {
+    console.log(faceMeasures);
+    faceMesh.onResults(empty);
+}
+    document.addEventListener("click", (e) => {if (e.target.id === "get_res") get_result()});
+    document.addEventListener("click", (e) => {if (e.target.id === "switch_camera") revertCamera()});
+    document.addEventListener("click", (e) => {if (e.target.id === "start_research") {start_research();startScalingRecording();}});
+    document.addEventListener("click", (e) => {if (e.target.id === "accept_research_scaling") {
+        if (scalingMeasures.length === 0)
+        {
+            cancelResearching();
+             finished_research();
+        }
+        else{
+        accept_research();
+        startFaceRecording();}}});
+    document.addEventListener("click", (e) => {if (e.target.id === "finish_research"){
+         if (faceMeasures.length === 0) {
+             cancelResearching();
+             finished_research();
+         }
+         else {
+             finishing_research();finishFaceRecording();
+         }}});
+    document.addEventListener("click", (e) => {if (e.target.id === "cancel_camera"){ cancelResearching();finished_research();}});
+    document.addEventListener("click", (e) => {if (e.target.id === "save_results"){ check_all_inserted();}});
+    document.addEventListener("click", (e) => {if (e.target.classList.contains("b-popup") || e.target.classList.contains("close-popup")){
+        PopUp.style.display="none";
+    }});
+    document.addEventListener("click", (e) => {if (e.target.id === "save_results"){
+    }});
+    PopUpForm.onsubmit = () => {
+        PopUp.style.display="none";
+        name = document.getElementById("name").value;
+        real_width = document.getElementById("real_width").value;
+        real_diag = document.getElementById("real_diag").value;
+        distance = document.getElementById("distance").value;
+        document.getElementById("real_width").value = undefined;
+        document.getElementById("real_diag").value = undefined;
+        document.getElementById("distance").value = 0;
+        document.getElementById("name").value = "";
+        let dat = JSON.stringify({
+            "name": name,
+            "real_diag": real_diag,
+            "real_width": real_width,
+            "width": width,
+            "diag": diag,
+            "scale": scale,
+            "distance": distance,
+            "scaleMeasurements": scalingMeasures.map((face) => {return faceToJson(face)}),
+            "faceMeasurements": faceMeasures.map((face) => {return faceToJson(face)}),
         })
-    };
-    document.getElementById("get_res").onclick = get_result;
-    document.getElementById("switch_camera").onclick = revertCamera;
+        send_data(dat);
+        finished_research()
+        return false;
+    }
+
+    for (let i=0; i < switcherElements.length; i+=1) {
+        let switcherElement = switcherElements[i];
+        switcherElement.addEventListener('click', () => {
+            if (switcherElement.classList.contains("switch-on")) {
+                modeNote.innerHTML = "Включен пользовательский режим";
+                switcherElement.classList.remove("switch-on");
+                addUserButtons();
+                faceMesh.onResults(mainRecognizer);
+                resultLabel.innerText = "";
+            }
+            else {
+                switcherElement.classList.add("switch-on");
+                modeNote.innerHTML = "Включен исследовательский режим";
+                addStartResearchButtons();
+                faceMesh.onResults(empty);
+                resultLabel.innerText = ""
+            }
+        })
+    }
 </script>
 <script src="{{ static('hands_recognizer.js') }}"></script>
 {% endblock %}

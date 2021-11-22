@@ -7,6 +7,7 @@
     flex: 1 1 auto;
     max-width: 2000px;
     min-width: 200px;
+    background: rgba(189, 197, 224, 0.14);
 }
 
 .top-menu {
@@ -21,6 +22,7 @@
     font-weight: lighter;
     padding-left: 30px;
     padding-right: 30px;
+    user-select: none;
 }
 
 #page-content {
@@ -32,10 +34,10 @@
 
 #page-content > .container {
     padding-top: 40px;
-    max-width: 918px;
+    max-width: 1500px;
     padding-left: 30px;
     padding-right: 30px;
-    flex-shrink: 1;
+    flex: 1 1 auto;
     display: flex;
     flex-direction: column;
     justify-content: flex-start;

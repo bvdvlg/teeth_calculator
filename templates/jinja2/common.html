@@ -10,7 +10,7 @@
 </head>
 <body id="common-body">
     <div class="top-menu">
-        <img src="{{ static('dentist.png') }}" alt="Icon" style="background: white;margin: 4px; border-radius: 5px;"/>
+        <img src="{{ static('dentist.png') }}" alt="Icon" style="background: white;margin: 4px; border-radius: 5px;width: 52px; height: 52px"/>
         {{ macro.nav_link('main', 'Главная', request) }}
         {{ macro.nav_link('camera', 'Камера', request) }}
         {{ macro.nav_link('about', 'О проекте', request) }}
@@ -21,7 +21,7 @@
     {% block content %}{% endblock %}
         </div>
     </div>
-    <footer>По всем вопросам обращаться на bvdvlg@gmail.com</footer>
+    <footer>По всем вопросам обращаться на <a href="mailto:bvdvlg@gmail.com">bvdvlg@gmail.com</a></footer>
 </body>
 </html>
 

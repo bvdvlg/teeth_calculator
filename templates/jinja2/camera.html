@@ -5,6 +5,7 @@
 <head>
     <meta charset="utf-8">
     <link rel="stylesheet" href="{{ static('camera.css') }}">
+    <link rel="stylesheet" href="{{ static('common.css') }}">
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
@@ -23,7 +24,7 @@
     </div>
     <video id="main-video" playsinline></video>
     <canvas class="output-canvas"></canvas>
-    <div id="camera-buttons" class="video-buttons">
+    <div id="camera-buttons" class="buttons">
         <div id="accept">Accept</div>
         <div id="get_res">Get result</div>
         <div id="switch_camera">Switch camera</div>
@@ -206,7 +207,6 @@
         minTrackingConfidence: 0.85
     });
     faceMesh.onResults(mainRecognizer);
-
     let camera = new Camera({audio: false, video: {facingMode: "environment"}
     }, async () => {
         await faceMesh.send({image: videoElement});

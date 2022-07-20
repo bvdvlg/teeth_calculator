@@ -133,7 +133,63 @@ function mainRecognizer(results) {
             }
         }
     }
+    canvasCtx.fill();
     canvasCtx.restore();
+
+}
+
+function rulletRecognizer(results) {
+        canvasCtx.save();
+    canvasCtx.clearRect(0, 0, canvasElement.width, canvasElement.height);
+    canvasCtx.drawImage(
+        results.image, 0, 0, canvasElement.width, canvasElement.height);
+    Xpos_up = canvasElement.width*8/12
+    Ypos_up = canvasElement.height*3/12
+    Xpos_down = canvasElement.width*9/12
+    Ypos_down = canvasElement.height*7/12
+    canvasCtx.rect(Xpos_up, Ypos_up, Xpos_down-Xpos_up, 2);
+    canvasCtx.rect(Xpos_up, Ypos_down, Xpos_down-Xpos_up, 2);
+    canvasCtx.fillStyle = "yellow";
+    canvasCtx.fill();
+    canvasCtx.restore();
+}
+
+function threatProfilePhoto(results) {
+    if (results.multiFaceLandmarks.length) {
+        console.log(photoProfileContext);
+        width = canvasElement.width/4
+        height = canvasElement.height/4
+        photoProfileContext.clearRect(0, 0, width, height);
+        photoProfileContext.drawImage(
+        results.image, 0, 0, width, height);
+        photoProfileContext.restore();
+        profile_inserted = true;
+        for (const landmarks of results.multiFaceLandmarks) {
+            for (let landmark in landmarks){
+                landmarks[landmark].x = landmarks[landmark].x*canvasElement.width;
+                landmarks[landmark].y = landmarks[landmark].y*canvasElement.height
+            }
+            profile_inserted = new Face(landmarks, scale);
+        }
+    }
+}
+
+function threatAnfasPhoto(results) {
+    if (results.multiFaceLandmarks.length) {
+        width = canvasElement.width/4
+        height = canvasElement.height/4
+        photoAnfasContext.clearRect(0, 0, width, height);
+        photoAnfasContext.drawImage(
+        results.image, 0, 0, width, height);
+        photoAnfasContext.restore();
+        for (const landmarks of results.multiFaceLandmarks) {
+            for (let landmark in landmarks){
+                landmarks[landmark].x = landmarks[landmark].x*canvasElement.width;
+                landmarks[landmark].y = landmarks[landmark].y*canvasElement.height
+            }
+            anfas_inserted = new Face(landmarks, scale);
+        }
+    }
 }
 
 function fixScaling(results) {

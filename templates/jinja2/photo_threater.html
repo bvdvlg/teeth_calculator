@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+{% extends 'common.html' %}
+{% block content %}
+<html lang="">
+<head>
+    <meta charset="utf-8">
+    <link rel="stylesheet" href="{{ static('camera.css') }}">
+    <link rel="stylesheet" href="{{ static('common.css') }}">
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/control_utils/control_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/drawing_utils/drawing_utils.js" crossorigin="anonymous"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/face_mesh.js" crossorigin="anonymous"></script>
+    <title>{% block title %}Camera{% endblock %}</title>
+    {% block head %}
+    {{ super() }}
+    {% endblock %}
+</head>
+
+<body>
+<div id="camera-content">
+<div class="container">
+    <video id="main-video" playsinline></video>
+    <canvas class="output-canvas"></canvas>
+    <div style="display: flex; gap: 30px; align-items: center">
+        <div id="profile_photo_button" class="circle"></div>
+        <div id="anfas_photo_button" class="circle"></div>
+        <label>
+            <input id="rullet_length" type="text"/>
+        </label>
+    </div>
+    <div style="display: flex;">
+    <canvas id="photo_profile"></canvas>
+    <canvas id="photo_anfas"></canvas>
+    </div>
+    <div id="camera-buttons" class="buttons">
+        <div id="send">Send</div>
+        <div id="switch_camera">Switch camera</div>
+    </div>
+    <div id="res"></div>
+</div>
+<div id="saving-popup" class="b-popup">
+    <div class="b-popup-content">
+        <div id="popup-header">
+            <h3>Пожалуйста, введите длину линейки для получения результата</h3>
+            <div style="flex: 1 0 auto;"></div>
+
+            <div class="cl-btn-6">
+                <div class="cl-btn-6-in close-popup">
+                    <div class="cl-btn-6-txt close-popup">Закрыть</div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+</div>
+</body>
+</html>
+
+
+<script src="{{ static('video_handler.js') }}"></script>
+    <script>
+        const photo_profile = document.getElementById("photo_profile");
+        const photoProfileContext = photo_profile.getContext('2d')
+        const photo_anfas = document.getElementById("photo_anfas");
+        const photoAnfasContext = photo_anfas.getContext('2d')
+
+        let videoElement = document.getElementById("main-video");
+        const canvasElement = document.getElementsByClassName('output-canvas')[0];
+        const canvasCtx = canvasElement.getContext('2d');
+        const switcherElements = document.getElementsByClassName("switch-btn");
+        const modeNote = document.getElementById("mode-note");
+        let faceMeasures = [];
+        let scalingMeasures = [];
+        const buttonsBar = document.getElementById("camera-buttons");
+        const resultLabel = document.getElementById("res");
+        let PopUp = document.getElementById("saving-popup");
+        let PopUpForm = document.getElementById("saving-form");
+        let scale = 0;
+        let width = 0;
+        let height = 0;
+        let diag = 0;
+        let rullet_height_pxs = canvasElement.height/3;
+        let real_width = undefined;
+        let real_diag = undefined;
+        let distance = undefined;
+        let profile_inserted;
+        let anfas_inserted;
+
+    </script>
+<script type="module">
+    function oncameraload() {
+        let document_height = document.documentElement.clientHeight
+        let document_width = document.documentElement.clientWidth-20
+        let max_height = Math.min(videoElement.videoHeight, document_height);
+        let max_width = Math.min(videoElement.videoWidth, document_width);
+        let potential_width = (max_height/videoElement.videoHeight)*videoElement.videoWidth;
+        let potential_height = (max_width/videoElement.videoWidth)*videoElement.videoHeight;
+        if (potential_height < document_height) {
+            canvasElement.width = max_width;
+            canvasElement.height = potential_height
+        }
+        if (potential_width < document_width) {
+            canvasElement.height = max_height;
+            canvasElement.width = potential_width
+        }
+        rullet_height_pxs = canvasElement.height/3
+    }
+
+    const faceMesh = new FaceMesh({locateFile: (file) => {
+            return `https://cdn.jsdelivr.net/npm/@mediapipe/face_mesh/${file}`;
+        }});
+
+    function turnTodefaultResult() {
+        console.log("turn to def")
+        faceMesh.onResults(rulletRecognizer)
+    }
+    faceMesh.setOptions({
+        maxNumFaces: 1,
+        refineLandmarks: true,
+        minDetectionConfidence: 0.85,
+        minTrackingConfidence: 0.85
+    });
+    faceMesh.onResults(rulletRecognizer);
+    let camera = new Camera({audio: false, video: {facingMode: "environment"}
+    }, async () => {
+        await faceMesh.send({image: videoElement});
+    }, oncameraload);
+
+    function revertCamera () {
+        let camera_constraints = camera.constraints;
+        if (camera_constraints.video.facingMode === "user") {
+            camera_constraints.video.facingMode = "environment";
+        } else {
+            camera_constraints.video.facingMode = "user";
+        }
+
+        camera.restart(camera_constraints, async () => {
+            await faceMesh.send({image: videoElement});}, oncameraload)
+    }
+    function take_profile_photo() {
+        console.log("making photo");
+        faceMesh.onResults((results)=>{threatProfilePhoto(results); turnTodefaultResult()});
+    }
+    function take_anfas_photo() {
+        console.log("making photo");
+        faceMesh.onResults((results)=>{threatAnfasPhoto(results); turnTodefaultResult()});
+    }
+    document.addEventListener("click", (e)=>{if(e.target.id === "profile_photo_button") take_profile_photo()})
+    document.addEventListener("click", (e)=>{if(e.target.id === "anfas_photo_button") take_anfas_photo()})
+
+    document.addEventListener("click", (e) => {if (e.target.classList.contains("b-popup") || e.target.classList.contains("close-popup")) PopUp.style.display="none"} );
+
+    document.addEventListener("click", (e) => {if (e.target.id === "switch_camera") revertCamera()});
+</script>
+<script src="{{ static('hands_recognizer.js') }}"></script>
+<script>
+document.addEventListener("click", (e)=> {
+    if (e.target.id === "send") {
+        if (anfas_inserted && profile_inserted && !document.getElementById("rullet_length").value) {
+            document.getElementById("saving-popup").style.display = "block";
+    } else {
+            profile_inserted.scale = document.getElementById("rullet_length").value/(rullet_height_pxs*100);
+            anfas_inserted.scale = document.getElementById("rullet_length").value/(rullet_height_pxs*100);
+            console.log(profile_inserted.get_width());
+            width = profile_inserted.get_width();
+            diag = anfas_inserted.get_diag();
+            get_result();
+        }
+    }
+});
+</script>
+{% endblock %}

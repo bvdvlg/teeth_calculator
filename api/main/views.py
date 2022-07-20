@@ -4,7 +4,8 @@ from api.main.serializers import MeasurementSerializer, serializers
 from mainapp.models import Measurement
 import xlwt
 from django.http import HttpResponse
-
+import cv2
+import numpy as np
 
 class MeasurementViewSet(viewsets.ModelViewSet):
     serializer_class = MeasurementSerializer
@@ -49,3 +50,13 @@ class MeasurementViewSet(viewsets.ModelViewSet):
             model = Measurement(**serializer.validated_data)
             model.save()
         return response.Response(serializer.errors)
+
+class CalculateParametersViewSet(viewsets.ModelViewSet):
+    @action(methods=['post'], detail=False)
+    def get_calculate(self, request):
+        response = HttpResponse(content_type='text/html')
+        file1 = request.FILES['photo_profile'].read()
+        file2 = request.FILES['photo_anfas'].read()
+        img1 = cv2.imdecode(np.frombuffer(file1, np.uint8), cv2.IMREAD_COLOR)
+        img2 = cv2.imdecode(np.frombuffer(file2, np.uint8), cv2.IMREAD_COLOR)
+        return response

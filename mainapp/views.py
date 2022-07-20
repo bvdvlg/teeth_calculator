@@ -19,3 +19,6 @@ def about(request):
 
 def results(request):
     return render(request, 'results.html')
+
+def photo_threater(request):
+    return render(request, 'photo_threater.html')
